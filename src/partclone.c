@@ -1564,7 +1564,7 @@ int open_target(char* target, cmd_opt* opt) {
 	int ret = 0;
 	int debug = opt->debug;
 	char *mp = NULL;
-	int flags = O_WRONLY | O_LARGEFILE;
+	int flags = O_WRONLY | O_LARGEFILE | O_DIRECT;
 	struct stat st_dev;
 	int ddd_block_device = -1;
 
