@@ -157,6 +157,9 @@ int main(int argc, char **argv) {
 	if (opt.ignore_crc)
 		log_mesg(1, 0, 1, debug, "Ignore CRC errors\n");
 
+	/// enable O_DIRECT flag on target 
+	if (opt.direct_io)
+		log_mesg(1, 0, 1, debug, "Enable O_DIRECT flag on target\n");
 	/**
 	 * open source and target
 	 * clone mode, source is device and target is image file/stdout

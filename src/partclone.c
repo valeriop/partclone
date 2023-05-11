@@ -247,6 +247,7 @@ void usage(void) {
 		"    -w,  --skip_write_error Continue restore while write errors\n"
 #endif
 		"    -dX, --debug=X          Set the debug level to X = [0|1|2]\n"
+		"    -Q,  --direct_io        Enable O_DIRECT flag writing on target\n"
 		"    -C,  --no_check         Don't check device size and free space\n"
 #ifdef HAVE_LIBNCURSESW
 		"    -N,  --ncurses          Using Ncurses User Interface\n"
@@ -344,6 +345,7 @@ void parse_options(int argc, char **argv, cmd_opt* opt) {
 		{ "UI-fresh",		required_argument,	NULL,   'f' },
 		{ "no_check",		no_argument,		NULL,   'C' },
 		{ "ignore_crc",		no_argument,		NULL,   'i' },
+		{ "direct_io",		no_argument,		NULL,   'Q' },
 		{ "force",		no_argument,		NULL,   'F' },
 		{ "no_block_detail",	no_argument,		NULL,   'B' },
 		{ "buffer_size",	required_argument,	NULL,   'z' },
@@ -394,6 +396,7 @@ void parse_options(int argc, char **argv, cmd_opt* opt) {
 	opt->skip_write_error = 0;
 	opt->check = 1;
 	opt->ignore_crc = 0;
+	opt->direct_io = 0;
 	opt->quiet = 0;
 	opt->no_block_detail = 0;
 	opt->fresh = 2;
@@ -454,6 +457,9 @@ void parse_options(int argc, char **argv, cmd_opt* opt) {
 				break;
 			case 'i':
 				opt->ignore_crc = 1;
+				break;
+			case 'Q':
+				opt->direct_io = 1;
 				break;
 			case 'F':
 				opt->force++;
@@ -1564,7 +1570,7 @@ int open_target(char* target, cmd_opt* opt) {
 	int ret = 0;
 	int debug = opt->debug;
 	char *mp = NULL;
-	int flags = O_WRONLY | O_LARGEFILE | O_DIRECT;
+	int flags = O_WRONLY | O_LARGEFILE;
 	struct stat st_dev;
 	int ddd_block_device = -1;
 
@@ -1641,6 +1647,10 @@ int open_target(char* target, cmd_opt* opt) {
 			flags |= O_CREAT;
 			if (!opt->overwrite)
 				flags |= O_EXCL;
+		}
+		if (!opt->direct_io){
+			log_mesg(1, 0, 1, debug, "Warning, you are writing without OS buffering (O_DIRECT flag)\n");
+			flags |= O_DIRECT;
 		}
 
 		if ((ret = open (target, flags, S_IRUSR)) == -1) {

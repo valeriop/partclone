@@ -110,6 +110,7 @@ struct cmd_opt
     int overwrite;
     int rescue;
     int check;
+    int direct_io;
     int ncurses;
     int force;
     int ignore_fschk;
